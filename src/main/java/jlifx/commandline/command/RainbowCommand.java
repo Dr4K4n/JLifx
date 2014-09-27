@@ -6,28 +6,37 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import jlifx.bulb.Bulb;
+import jlifx.bulb.IBulb;
 import jlifx.commandline.AbstractBulbCommand;
+import jlifx.commandline.Utils;
 
 public class RainbowCommand extends AbstractBulbCommand {
 
     @Override
-    public boolean execute(Collection<Bulb> bulbs, String[] commandArgs, PrintStream out) throws Exception {
-        startKeyListenerThread(out);
+    public boolean execute(Collection<IBulb> bulbs, String[] commandArgs, PrintStream out) throws Exception {
+        startTerminatorThread(commandArgs, out);
         List<Color> spectrumColors = getSpectrumColors();
         int i = 0;
         while (!isInterrupted()) {
             if (i >= spectrumColors.size()) {
                 i = 0;
             }
-            for (Bulb bulb : bulbs) {
+            for (IBulb bulb : bulbs) {
                 Color color = spectrumColors.get(i);
-                bulb.colorize(color, 3);
+                bulb.colorize(color, 3, 1.0f);
             }
             Thread.sleep(3000);
             i++;
         }
         return true;
+    }
+
+    private void startTerminatorThread(String[] commandArgs, PrintStream out) {
+        if (commandArgs.length == 2 && Utils.isIntegerValue(commandArgs[1])) {
+            startTimer(Integer.parseInt(commandArgs[1]));
+        } else {
+            startKeyListenerThread(out);
+        }
     }
 
     List<Color> getSpectrumColors() {

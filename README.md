@@ -3,6 +3,11 @@ JLifx
 
 Small LIFX Wifi LED bulb control utility in Java.
 
+This project is not, in any way, affiliated or related to LIFX Labs.
+
+Implementation is based on the reverse engineered protocol specification by
+magicmonkey (https://github.com/magicmonkey/lifxjs/blob/master/Protocol.md)
+
 Usage
 -----
 Build the JAR and run it from the command line:

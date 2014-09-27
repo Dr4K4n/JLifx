@@ -3,13 +3,15 @@ package jlifx.bulb;
 import java.awt.Color;
 import java.io.IOException;
 
+import jlifx.commandline.Utils;
 import jlifx.packet.PacketService;
 import jlifx.packet.StatusResponsePacket;
 
-public class Bulb {
+public class Bulb implements IBulb {
     private final byte[] macAddress;
     private final GatewayBulb gatewayBulb;
     private StatusResponsePacket status;
+    private BulbMeshFirmwareStatus meshFirmwareStatus;
 
     public Bulb(byte[] macAddress, GatewayBulb gatewayBulb) {
         this.macAddress = macAddress;
@@ -30,8 +32,7 @@ public class Bulb {
     }
 
     public String getMacAddressAsString() {
-        return String.format("%02x:%02x:%02x:%02x:%02x:%02x", macAddress[0], macAddress[1], macAddress[2],
-            macAddress[3], macAddress[4], macAddress[5]);
+        return Utils.getMacAddressAsString(macAddress);
     }
 
     public void switchOn() throws IOException {
@@ -42,8 +43,8 @@ public class Bulb {
         PacketService.sendPowerManagementPacket(this, false);
     }
 
-    public void colorize(Color color, int fadetime) throws IOException {
-        PacketService.sendColorManagementPacket(this, color, fadetime);
+    public void colorize(Color color, int fadetime, float brightness) throws IOException {
+        PacketService.sendColorManagementPacket(this, color, fadetime, brightness);
     }
 
     public StatusResponsePacket getStatus() {
@@ -78,8 +79,19 @@ public class Bulb {
         return getStatus().getDim();
     }
 
+    public void setDim(float brightness) throws IOException {
+        PacketService.sendSetDimAbsolutePacket(this, brightness);
+    }
+
     public int getPower() {
         return getStatus().getPower();
+    }
+
+    public BulbMeshFirmwareStatus getMeshFirmwareStatus() throws IOException {
+        if (meshFirmwareStatus == null) {
+            meshFirmwareStatus = PacketService.getMeshFirmwareStatus(this.getGatewayBulb());
+        }
+        return meshFirmwareStatus;
     }
 
     @Override

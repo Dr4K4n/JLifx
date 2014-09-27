@@ -28,6 +28,10 @@ public final class DiscoveryService {
 
     private DiscoveryService() {}
 
+    /**
+     * Returns the first valid Gateway bulb discovered, or null if no gateway bulb was 
+     * discovered in any of the networks.
+     */
     public static GatewayBulb discoverGatewayBulb() throws IOException {
         List<InetAddress> networkBroadcastAddresses = getNetworkBroadcastAddresses();
         for (InetAddress broadcastAddress : networkBroadcastAddresses) {
@@ -70,7 +74,8 @@ public final class DiscoveryService {
                 continue;
             }
             if (isAnswerFromGatewayBulb(answer)) {
-                return new GatewayBulb(answer.getAddress(), Packet.fromDatagramPacket(answer).getGatewayMac());
+                Packet packet = Packet.fromDatagramPacket(answer);
+                return new GatewayBulb(answer.getAddress(), packet.getGatewayMac(), packet.getTargetMac());
             }
             retries--;
         }
@@ -87,8 +92,8 @@ public final class DiscoveryService {
         }
     }
 
-    public static Collection<Bulb> discoverAllBulbs(GatewayBulb gatewayBulb) throws IOException {
-        Set<Bulb> result = new HashSet<Bulb>();
+    public static Collection<IBulb> discoverAllBulbs(GatewayBulb gatewayBulb) throws IOException {
+        Set<IBulb> result = new HashSet<IBulb>();
         List<Packet> packets = PacketService.sendStatusRequestPacket(gatewayBulb);
         for (Packet packet : packets) {
             StatusResponsePacket responsePacket = new StatusResponsePacket(packet);
